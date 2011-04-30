@@ -190,8 +190,9 @@ class Net::SSH::Gateway
       @thread = Thread.new do
         while @active
           @session_mutex.synchronize do
-            @session.process(0.1)
+            @session.process(0.001)
           end
+          Thread.pass
         end
       end
     end
