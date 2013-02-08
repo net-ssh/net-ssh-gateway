@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jamis Buck", "Delano Mandelbaum"]
   s.cert_chain = ["gem-public_cert.pem"]
-  s.date = "2013-02-06"
+  s.date = "2013-02-08"
   s.description = "A simple library to assist in establishing tunneled Net::SSH connections"
   s.email = "net-ssh@solutious.com"
   s.extra_rdoc_files = [
@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
     "setup.rb",
     "test/gateway_test.rb"
   ]
-  s.homepage = "https://github.com/net-ssh/net-scp"
+  s.homepage = "https://github.com/net-ssh/net-ssh-gateway"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubyforge_project = "net-ssh-gateway"

@@ -20,7 +20,7 @@ begin
     s.summary = "A simple library to assist in establishing tunneled Net::SSH connections"
     s.description = s.summary
     s.email = "net-ssh@solutious.com"
-    s.homepage = "https://github.com/net-ssh/net-scp"
+    s.homepage = "https://github.com/net-ssh/net-ssh-gateway"
     s.authors = ["Jamis Buck", "Delano Mandelbaum"]
 
     s.add_dependency 'net-ssh', ">=2.6.5"
