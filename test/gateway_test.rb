@@ -1,6 +1,6 @@
 # ruby -I../net-ssh/lib -Ilib -Itest -rrubygems test/gateway_test.rb
 require 'test/unit'
-require 'mocha'
+require 'mocha/setup'
 require 'net/ssh/gateway'
 
 class GatewayTest < Test::Unit::TestCase
