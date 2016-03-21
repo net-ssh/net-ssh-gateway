@@ -159,6 +159,16 @@ class Net::SSH::Gateway
     end
   end
 
+  # Provides access to the closed? state of the underlying session
+  # 
+  #   gateway.session_closed? # => true or false
+  # 
+  def session_closed?
+    @session_mutex.synchronize do
+      @session.closed?
+    end
+  end
+
   private
 
     # Raises a RuntimeError if the gateway is not active. This is used as a

@@ -63,6 +63,13 @@ class GatewayTest < MiniTest::Test
     assert gateway_session.forward.active_locals.empty?
   end
 
+  def test_session_closed
+    gateway_session, gateway = new_gateway
+    assert !gateway.session_closed?
+    gateway_session.close # premature closing
+    assert gateway.session_closed?
+  end
+
   private
 
     def expect_connect_to(host, user, options={})
@@ -101,10 +108,16 @@ class GatewayTest < MiniTest::Test
       attr_reader :forward
 
       def initialize(options={})
+        @closed = false
         @forward = MockForward.new(options)
       end
 
       def close
+        @closed = true
+      end
+
+      def closed?
+        @closed
       end
 
       def process(wait=nil)
