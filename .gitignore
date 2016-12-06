@@ -9,3 +9,5 @@
 /tmp/
 *.swp
 .DS_Store
+
+*.gem

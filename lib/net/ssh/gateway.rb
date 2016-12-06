@@ -101,12 +101,32 @@ class Net::SSH::Gateway
   #
   # If +local_port+ is not specified, the next available port will be used.
   def open(host, port, local_port=nil)
+    self.open(host, port, '127.0.0.1', local_port)
+  end
+
+  # Opens a new port on the local host and forwards it to the given host/port
+  # via the gateway host. If a block is given, the newly allocated port
+  # number will be yielded to the block, and the port automatically closed
+  # (see #close) when the block finishes. Otherwise, the port number will be
+  # returned, and the caller is responsible for closing the port (#close).
+  #
+  #   gateway.open('host', 80) do |port|
+  #     # ...
+  #   end
+  #
+  #   port = gateway.open('host', 80)
+  #   # ...
+  #   gateway.close(port)
+  #
+  # The +local+host+ parameter specifies which IP address to bind to locally.
+  # If +local_port+ is not specified, the next available port will be used.
+  def open(host, port, local_host, local_port=nil)
     ensure_open!
 
     actual_local_port = local_port || next_port
 
     @session_mutex.synchronize do
-      @session.forward.local(actual_local_port, host, port)
+      @session.forward.local(local_host, actual_local_port, host, port)
     end
 
     if block_given?
