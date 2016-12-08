@@ -20,19 +20,25 @@ class GatewayTest < MiniTest::Test
   def test_open_should_start_local_ports_at_65535
     gateway_session, gateway = new_gateway
     assert_equal 65535, gateway.open("app1", 22)
-    assert_equal [65535, "app1", 22], gateway_session.forward.active_locals[65535]
+    assert_equal ["127.0.0.1", 65535, "app1", 22], gateway_session.forward.active_locals[65535]
   end
 
   def test_open_should_decrement_port_and_retry_if_ports_are_in_use
     gateway_session, gateway = new_gateway(:reserved => lambda { |n| n > 65000 })
     assert_equal 65000, gateway.open("app1", 22)
-    assert_equal [65000, "app1", 22], gateway_session.forward.active_locals[65000]
+    assert_equal ["127.0.0.1", 65000, "app1", 22], gateway_session.forward.active_locals[65000]
   end
 
   def test_open_with_explicit_local_port_should_use_that_port
     gateway_session, gateway = new_gateway
     assert_equal 8181, gateway.open("app1", 22, 8181)
-    assert_equal [8181, "app1", 22], gateway_session.forward.active_locals[8181]
+    assert_equal ["127.0.0.1", 8181, "app1", 22], gateway_session.forward.active_locals[8181]
+  end
+
+  def test_open_with_explicit_local_host_and_port_should_use_that_port
+    gateway_session, gateway = new_gateway
+    assert_equal 8181, gateway.open("app1", 22, "1.2.3.4", 8181)
+    assert_equal ["1.2.3.4", 8181, "app1", 22], gateway_session.forward.active_locals[8181]
   end
 
   def test_ssh_should_return_connection_when_no_block_is_given
@@ -40,7 +46,7 @@ class GatewayTest < MiniTest::Test
     expect_connect_to("127.0.0.1", "user", :port => 65535).returns(result = mock("session"))
     newsess = gateway.ssh("app1", "user")
     assert_equal result, newsess
-    assert_equal [65535, "app1", 22], gateway_session.forward.active_locals[65535]
+    assert_equal ["127.0.0.1", 65535, "app1", 22], gateway_session.forward.active_locals[65535]
   end
 
   def test_ssh_with_block_should_yield_session_and_then_close_port
@@ -91,9 +97,9 @@ class GatewayTest < MiniTest::Test
         @active_locals.delete(port)
       end
 
-      def local(lport, host, rport)
+      def local(lhost, lport, host, rport)
         raise Errno::EADDRINUSE if @options[:reserved] && @options[:reserved][lport]
-        @active_locals[lport] = [lport, host, rport]
+        @active_locals[lport] = [lhost, lport, host, rport]
       end
     end
 
