@@ -10,4 +10,5 @@
 *.swp
 .DS_Store
 
+.byebug_history
 *.gem
