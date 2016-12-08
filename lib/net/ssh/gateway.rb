@@ -99,48 +99,23 @@ class Net::SSH::Gateway
   #   # ...
   #   gateway.close(port)
   #
+  # This function takes variable arguments.  See comments in the case statement
+  # for details.
+  #
+  # The +local_host+ parameter specifies which network interface to bind to locally,
+  # and defaults to "127.0.0.1" if omitted.
   # If +local_port+ is not specified, the next available port will be used.
-  def open(host, port, local_port=nil)
-    self.open(host, port, '127.0.0.1', local_port)
-  end
-
-  # Opens a new port on the local host and forwards it to the given host/port
-  # via the gateway host. If a block is given, the newly allocated port
-  # number will be yielded to the block, and the port automatically closed
-  # (see #close) when the block finishes. Otherwise, the port number will be
-  # returned, and the caller is responsible for closing the port (#close).
-  #
-  #   gateway.open('host', 80) do |port|
-  #     # ...
-  #   end
-  #
-  #   port = gateway.open('host', 80)
-  #   # ...
-  #   gateway.close(port)
-  #
-  # The +local+host+ parameter specifies which IP address to bind to locally.
-  # If +local_port+ is not specified, the next available port will be used.
-  def open(host, port, local_host, local_port=nil)
-    ensure_open!
-
-    actual_local_port = local_port || next_port
-
-    @session_mutex.synchronize do
-      @session.forward.local(local_host, actual_local_port, host, port)
-    end
-
-    if block_given?
-      begin
-        yield actual_local_port
-      ensure
-        close(actual_local_port)
-      end
+  def open(*args)
+    case args.size
+    when 2 # open(host, port)
+      open3(*args[0,2], nil)
+    when 3 # open(host, port, local_port)
+      open3(*args)
+    when 4 # open(host, port, local_host, local_port)
+      open4(*args)
     else
-      return actual_local_port
+      raise ArgumentError, "Expecting 2..4 arguments, but got #{args.size} instead."
     end
-  rescue Errno::EADDRINUSE
-    raise if local_port # if a local port was explicitly requested, bubble the error up
-    retry
   end
 
   # Cancels port-forwarding over an open port that was previously opened via
@@ -212,5 +187,68 @@ class Net::SSH::Gateway
         @next_port = MAX_PORT if @next_port < MIN_PORT
         port
       end
+    end
+
+    # Opens a new port on the local host and forwards it to the given host/port
+    # via the gateway host. If a block is given, the newly allocated port
+    # number will be yielded to the block, and the port automatically closed
+    # (see #close) when the block finishes. Otherwise, the port number will be
+    # returned, and the caller is responsible for closing the port (#close).
+    #
+    #   gateway.open('host', 80) do |port|
+    #     # ...
+    #   end
+    #
+    #   port = gateway.open('host', 80)
+    #   # ...
+    #   gateway.close(port)
+    #
+    # Unlike open4(), this method always binds to the loopback network
+    # interface # of "127.0.0.1".
+    #
+    # If +local_port+ is not specified, the next available port will be used.
+    def open3(host, port, local_port=nil)
+      open4(host, port, "127.0.0.1", local_port)
+    end
+
+    # Opens a new port on the local host and forwards it to the given host/port
+    # via the gateway host. If a block is given, the newly allocated port
+    # number will be yielded to the block, and the port automatically closed
+    # (see #close) when the block finishes. Otherwise, the port number will be
+    # returned, and the caller is responsible for closing the port (#close).
+    #
+    #   gateway.open('host', 80) do |port|
+    #     # ...
+    #   end
+    #
+    #   port = gateway.open('host', 80)
+    #   # ...
+    #   gateway.close(port)
+    #
+    # Unlike open3(), this method specifies which network interface to bind to
+    # locally via the +local_host+ parameter.
+    #
+    # If +local_port+ is not specified, the next available port will be used.
+    def open4(host, port, local_host, local_port=nil)
+      ensure_open!
+
+      actual_local_port = local_port || next_port
+
+      @session_mutex.synchronize do
+        @session.forward.local(local_host, actual_local_port, host, port)
+      end
+
+      if block_given?
+        begin
+          yield actual_local_port
+        ensure
+          close(actual_local_port)
+        end
+      else
+        return actual_local_port
+      end
+    rescue Errno::EADDRINUSE
+      raise if local_port # if a local port was explicitly requested, bubble the error up
+      retry
     end
 end
