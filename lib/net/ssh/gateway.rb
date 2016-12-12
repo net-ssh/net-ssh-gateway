@@ -120,11 +120,11 @@ class Net::SSH::Gateway
 
   # Cancels port-forwarding over an open port that was previously opened via
   # #open.
-  def close(port)
+  def close(port, bind_address="127.0.0.1")
     ensure_open!
 
     @session_mutex.synchronize do
-      @session.forward.cancel_local(port)
+      @session.forward.cancel_local(port, bind_address)
     end
   end
 
