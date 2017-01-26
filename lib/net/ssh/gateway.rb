@@ -67,6 +67,11 @@ class Net::SSH::Gateway
     @active
   end
 
+  # Returns the gateway host being used for the tunnel
+  def host?
+    @session.transport.host
+  end
+
   # Shuts down the gateway by closing all forwarded ports and then closing
   # the gateway's SSH session.
   def shutdown!
@@ -100,13 +105,22 @@ class Net::SSH::Gateway
   #   gateway.close(port)
   #
   # If +local_port+ is not specified, the next available port will be used.
+  #
+  # If local_port is zero then the next available local port will automatically
+  # be assigned during socket create, and assigned port stored in actual_local_port.
+  # This is useful if you want to start more than one gateway session at once and want
+  # to avoid local port clashes based on next_port selection process
   def open(host, port, local_port=nil)
     ensure_open!
 
     actual_local_port = local_port || next_port
 
     @session_mutex.synchronize do
-      @session.forward.local(actual_local_port, host, port)
+      if local_port.nil?
+        @session.forward.local(actual_local_port, host, port)
+      else
+        actual_local_port = @session.forward.local(actual_local_port, host, port)
+      end
     end
 
     if block_given?
