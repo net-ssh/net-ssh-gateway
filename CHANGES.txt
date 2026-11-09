@@ -1,4 +1,7 @@
+=== Unreleased
 
+* `require 'net/ssh/gateway'` now defines `Net::SSH::Gateway::VERSION` [mfazekas]
+* Run the tests on GitHub Actions for Ruby 2.6 to 4.0 [mfazekas]
 
 === 2.0.0 / 26 Jan 2017
 

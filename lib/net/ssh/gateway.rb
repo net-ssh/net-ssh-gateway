@@ -1,6 +1,7 @@
 require 'thread'
 require 'net/ssh'
 require 'net/ssh/version'
+require 'net/ssh/gateway/version'
 
 # A Gateway is an object that allows you to tunnel network connections through
 # a publicly visible host to a host hidden behind it. This is particularly
