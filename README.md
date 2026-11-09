@@ -23,6 +23,7 @@ Net::SSH::Gateway is a library for programmatically tunnelling connections to se
 
 In a nutshell:
 
+```ruby
   require 'net/ssh/gateway'
 
   gateway = Net::SSH::Gateway.new('host', 'user')
@@ -40,6 +41,7 @@ In a nutshell:
   # As of 1.1.0, you can also specify the wait time for the
   # gateway thread with the :loop_wait option.
   gateway = Net::SSH::Gateway.new('host', 'user', :loop_wait => 0.001)
+```
 
 See Net::SSH::Gateway for more documentation.
 
