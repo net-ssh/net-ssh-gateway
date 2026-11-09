@@ -101,13 +101,16 @@ class Net::SSH::Gateway
   #   gateway.close(port)
   #
   # If +local_port+ is not specified, the next available port will be used.
+  # A +local_port+ of 0 lets the OS pick a free port, which avoids clashes
+  # between several gateways in one process; the port it picked is returned
+  # (or yielded).
   def open(host, port, local_port=nil)
     ensure_open!
 
     actual_local_port = local_port || next_port
 
     @session_mutex.synchronize do
-      @session.forward.local(actual_local_port, host, port)
+      actual_local_port = @session.forward.local(actual_local_port, host, port)
     end
 
     if block_given?
