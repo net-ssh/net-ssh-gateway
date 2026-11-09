@@ -35,6 +35,20 @@ class GatewayTest < Minitest::Test
     assert_equal [8181, "app1", 22], gateway_session.forward.active_locals[8181]
   end
 
+  def test_open_with_local_port_zero_should_return_the_port_the_os_picked
+    gateway_session, gateway = new_gateway(:ephemeral_port => 50123)
+    assert_equal 50123, gateway.open("app1", 22, 0)
+    assert_equal [50123, "app1", 22], gateway_session.forward.active_locals[50123]
+  end
+
+  def test_open_with_local_port_zero_and_block_should_yield_and_close_the_picked_port
+    gateway_session, gateway = new_gateway(:ephemeral_port => 50123)
+    yielded = nil
+    gateway.open("app1", 22, 0) { |port| yielded = port }
+    assert_equal 50123, yielded
+    assert gateway_session.forward.active_locals.empty?
+  end
+
   def test_ssh_should_return_connection_when_no_block_is_given
     gateway_session, gateway = new_gateway
     expect_connect_to("127.0.0.1", "user", :port => 65535).returns(result = mock("session"))
@@ -93,7 +107,9 @@ class GatewayTest < Minitest::Test
 
       def local(lport, host, rport)
         raise Errno::EADDRINUSE if @options[:reserved] && @options[:reserved][lport]
+        lport = @options.fetch(:ephemeral_port) if lport == 0
         @active_locals[lport] = [lport, host, rport]
+        lport
       end
     end
 
