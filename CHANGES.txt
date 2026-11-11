@@ -1,4 +1,4 @@
-=== Unreleased
+=== 2.0.1 / 11 Nov 2026
 
 * `open` with a `local_port` of 0 returns and yields the port the OS picked, so several gateways can run without port clashes. Based on #6 by @thechile [mfazekas]
 * `require 'net/ssh/gateway'` now defines `Net::SSH::Gateway::VERSION` [mfazekas]
